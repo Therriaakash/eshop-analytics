@@ -36,8 +36,10 @@ def percentile95(values):
 
 @app.get("/")
 def home():
-    return {"status": "ok"}
-
+    response = JSONResponse(content={"status": "ok"})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+    
 def calculate_metrics(req: AnalyticsRequest):
     result = {}
 
