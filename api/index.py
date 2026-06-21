@@ -46,7 +46,7 @@ def percentile95(values):
 
 
 def calculate_metrics(req: AnalyticsRequest):
-    result = {}
+    result = {"regions": {}}
 
     for region in req.regions:
         rows = [r for r in telemetry if r["region"] == region]
@@ -57,7 +57,7 @@ def calculate_metrics(req: AnalyticsRequest):
         latencies = [r["latency_ms"] for r in rows]
         uptimes = [r["uptime_pct"] for r in rows]
 
-        result[region] = {
+        result["regions"][region] = {
             "avg_latency": round(sum(latencies) / len(latencies), 2),
             "p95_latency": round(percentile95(latencies), 2),
             "avg_uptime": round(sum(uptimes) / len(uptimes), 3),
