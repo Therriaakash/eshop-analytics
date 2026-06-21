@@ -37,7 +37,7 @@ def percentile95(values):
 def home():
     return {"status": "ok"}
 
-@app.post("/")
+@app.post("/analytics")
 def analytics(req: AnalyticsRequest):
     result = {}
 
