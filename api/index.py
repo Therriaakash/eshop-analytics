@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import json
 import os
 import math
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -63,8 +64,14 @@ def calculate_metrics(req: AnalyticsRequest):
 
 @app.post("/")
 def analytics_root(req: AnalyticsRequest):
-    return calculate_metrics(req)
-
+    result = calculate_metrics(req)
+    response = JSONResponse(content=result)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+    
 @app.post("/analytics")
 def analytics(req: AnalyticsRequest):
-    return calculate_metrics(req)
+    result = calculate_metrics(req)
+    response = JSONResponse(content=result)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
