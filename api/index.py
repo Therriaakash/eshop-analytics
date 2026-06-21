@@ -10,8 +10,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["Access-Control-Allow-Origin"],
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,13 +45,6 @@ def percentile95(values):
     return values[lower] + fraction * (values[upper] - values[lower])
 
 
-@app.get("/")
-def home():
-    response = JSONResponse(content={"status": "ok"})
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    return response
-
-
 def calculate_metrics(req: AnalyticsRequest):
     result = {}
 
@@ -74,6 +68,13 @@ def calculate_metrics(req: AnalyticsRequest):
         }
 
     return result
+
+
+@app.get("/")
+def home():
+    response = JSONResponse(content={"status": "ok"})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
 @app.post("/")
