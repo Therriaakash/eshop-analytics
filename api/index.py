@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import json
 import os
-import math
-from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -21,25 +20,37 @@ DATA_FILE = os.path.join(BASE_DIR, "telemetry.json")
 with open(DATA_FILE, "r") as f:
     telemetry = json.load(f)
 
+
 class AnalyticsRequest(BaseModel):
     regions: list[str]
     threshold_ms: float
 
+
 def percentile95(values):
     values = sorted(values)
+    n = len(values)
 
-    if not values:
+    if n == 0:
         return 0
 
-    index = math.ceil(0.95 * len(values)) - 1
-    return values[index]
+    pos = 0.95 * (n - 1)
+    lower = int(pos)
+    upper = min(lower + 1, n - 1)
+
+    if lower == upper:
+        return values[lower]
+
+    fraction = pos - lower
+    return values[lower] + fraction * (values[upper] - values[lower])
+
 
 @app.get("/")
 def home():
     response = JSONResponse(content={"status": "ok"})
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
-    
+
+
 def calculate_metrics(req: AnalyticsRequest):
     result = {}
 
@@ -64,16 +75,32 @@ def calculate_metrics(req: AnalyticsRequest):
 
     return result
 
+
 @app.post("/")
 def analytics_root(req: AnalyticsRequest):
     result = calculate_metrics(req)
     response = JSONResponse(content=result)
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
-    
+
+
 @app.post("/analytics")
 def analytics(req: AnalyticsRequest):
     result = calculate_metrics(req)
     response = JSONResponse(content=result)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
+@app.options("/")
+def options_root():
+    response = JSONResponse(content={})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
+@app.options("/analytics")
+def options_analytics():
+    response = JSONResponse(content={})
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
